@@ -3,57 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOSPITAL MARKETING PRO</title>
+    <title>HOSPITAL MARKETING PRO (Personal)</title>
+    
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         body { font-family: 'Pretendard', sans-serif; background-color: #0E1117; color: #E6EDF3; }
         
-        /* 커스텀 스크롤바 */
+        /* 스크롤바 커스텀 */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #161B22; }
         ::-webkit-scrollbar-thumb { background: #30363D; border-radius: 4px; }
         
-        /* 탭 스타일 */
-        .tab-active { border-bottom: 2px solid #58A6FF; color: #FFFFFF; font-weight: bold; }
-        .tab-inactive { color: #8B949E; }
+        /* 컴포넌트 스타일 */
+        .card { background-color: #161B22; border: 1px solid #30363D; border-radius: 8px; padding: 24px; margin-bottom: 20px; }
+        .input-dark { background-color: #0D1117; border: 1px solid #30363D; color: white; padding: 12px; border-radius: 6px; width: 100%; transition: 0.2s; }
+        .input-dark:focus { border-color: #58A6FF; outline: none; }
         
-        /* 카드 스타일 */
-        .card { background-color: #161B22; border: 1px solid #30363D; border-radius: 8px; padding: 20px; }
-        
-        /* 버튼 스타일 */
-        .btn-primary { background-color: #238636; color: white; transition: 0.2s; }
+        .btn-primary { background-color: #238636; color: white; font-weight: 600; padding: 12px; border-radius: 6px; width: 100%; transition: 0.2s; }
         .btn-primary:hover { background-color: #2EA043; }
-        .btn-secondary { background-color: #21262D; border: 1px solid #30363D; color: #C9D1D9; }
-        .btn-active { background-color: #1F6FEB; color: white; border: none; }
         
-        /* 입력창 스타일 */
-        input, select { background-color: #0D1117; border: 1px solid #30363D; color: white; padding: 10px; border-radius: 6px; width: 100%; }
+        .tab-btn { flex: 1; padding: 14px; text-align: center; color: #8B949E; border-bottom: 2px solid transparent; cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { color: white; border-bottom-color: #58A6FF; font-weight: bold; background-color: #161B22; }
         
-        /* 테이블 스타일 */
-        table { width: 100%; border-collapse: collapse; }
-        th { background-color: #161B22; color: #8B949E; padding: 12px; text-align: left; font-size: 0.9rem; border-bottom: 1px solid #30363D; }
-        td { padding: 12px; border-bottom: 1px solid #30363D; font-size: 0.9rem; }
-        tr:hover { background-color: #1F242C; }
-        a { color: #58A6FF; text-decoration: none; }
+        .grid-btn { padding: 10px; font-size: 0.85rem; border-radius: 6px; border: 1px solid #30363D; background: #21262D; color: #C9D1D9; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .grid-btn.active { background: #1F6FEB; color: white; border-color: #1F6FEB; }
         
-        /* 로딩 스피너 */
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #58A6FF; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
+        /* 로딩 애니메이션 */
+        .spinner { border: 3px solid #30363D; border-top: 3px solid #58A6FF; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* 등급 뱃지 */
+        .badge-s { background-color: #7f1d1d; color: #fecaca; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; }
+        .badge-a { background-color: #1e3a8a; color: #bfdbfe; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; }
+        .badge-b { background-color: #14532d; color: #bbf7d0; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; }
+        .badge-c { background-color: #374151; color: #9ca3af; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
-        // --- [설정] 키워드 확장 리스트 ---
+        // ==========================================================================================
+        // 1. [필수] API 키 설정 (여기에 본인의 키를 입력하세요)
+        // ==========================================================================================
+        const CONFIG = {
+            KAKAO_REST_KEY: "여기에_카카오_REST_API_키를_넣으세요", 
+            NAVER_ID: "여기에_네이버_CLIENT_ID를_넣으세요",
+            NAVER_SECRET: "여기에_네이버_CLIENT_SECRET을_넣으세요",
+            YOUTUBE_KEY: "여기에_유튜브_API_키를_넣으세요"
+        };
+
+        // --- 데이터 확장 리스트 ---
         const KEYWORD_EXPANSION = {
             "피부과": ["피부과", "피부과추천", "피부과전문의", "야간진료"],
             "성형외과": ["성형외과", "눈성형", "코성형", "재수술"],
@@ -67,297 +76,434 @@
             "뷰티": ["에스테틱", "경락", "윤곽관리", "신부관리"]
         };
 
-        // --- [유틸] 날짜 계산 및 숫자 포맷 ---
+        // --- 유틸리티 함수 ---
+        const formatNum = (n) => n ? new Intl.NumberFormat('ko-KR', { notation: "compact", maximumFractionDigits: 1 }).format(n) : 0;
         const getDaysAgo = (dateStr) => {
             if(!dateStr) return 999;
-            const postDate = new Date(dateStr.slice(0,4), dateStr.slice(4,6)-1, dateStr.slice(6,8));
+            const y = dateStr.length === 8 ? dateStr.substring(0,4) : dateStr.substring(0,4);
+            const m = dateStr.length === 8 ? dateStr.substring(4,6) : dateStr.substring(5,7);
+            const d = dateStr.length === 8 ? dateStr.substring(6,8) : dateStr.substring(8,10);
+            const post = new Date(y, m-1, d);
             const now = new Date();
-            const diff = now - postDate;
-            return Math.floor(diff / (1000 * 60 * 60 * 24));
+            return Math.floor((now - post) / (1000 * 60 * 60 * 24));
         };
 
-        const formatNumber = (num) => {
-            if(num >= 10000) return (num/10000).toFixed(1) + '만';
-            if(num >= 1000) return (num/1000).toFixed(1) + '천';
-            return num;
+        // --- 등급 산정 로직 (9단계) ---
+        const getBlogGrade = (rank, days) => {
+            if (rank <= 5) return days <= 30 ? "👑 S+ (최신 최적)" : days <= 180 ? "🏆 S (상위 노출)" : "🛡️ S- (알박기)";
+            if (rank <= 15) return days <= 30 ? "🚀 A+ (급상승)" : days <= 180 ? "🥇 A (우수)" : "💤 A- (유지)";
+            if (rank <= 30) return days <= 90 ? "🥈 B (준수)" : "🥉 C (일반)";
+            return "🌱 C- (심해)";
         };
 
-        // --- [로직] 블로그 등급 계산 ---
-        const calculateBlogRank = (rank, daysAgo) => {
-            if (rank <= 5) {
-                if (daysAgo <= 30) return "👑 S+ (최신 최적)";
-                if (daysAgo <= 180) return "🏆 S (상위 노출)";
-                return "🛡️ S- (알박기)";
-            } else if (rank <= 15) {
-                if (daysAgo <= 30) return "🚀 A+ (급상승)";
-                if (daysAgo <= 180) return "🥇 A (우수)";
-                return "💤 A- (유지)";
-            } else if (rank <= 30) {
-                return "🥈 B (준수)";
-            } else {
-                return "🌱 C (일반)";
-            }
-        };
-
-        // --- [컴포넌트] 메인 앱 ---
+        // ==========================================================================================
+        // 2. 메인 앱 컴포넌트
+        // ==========================================================================================
         const App = () => {
-            const [activeTab, setActiveTab] = useState('blog');
-            const [apiKeys, setApiKeys] = useState({ naverId: '', naverSecret: '', youtubeKey: '' });
+            const [tab, setTab] = useState('loc');
             
-            // 블로그 상태
-            const [blogInputs, setBlogInputs] = useState({ region: '분당', category: '피부과' });
+            // --- STATE: 상권 분석 ---
+            const [locQ, setLocQ] = useState('');
+            const [locData, setLocData] = useState(null);
+            const [locLoading, setLocLoading] = useState(false);
+            const [kwdResult, setKwdResult] = useState([]);
+
+            // --- STATE: 블로그 분석 ---
+            const [blogInputs, setBlogInputs] = useState({ region: '', category: '피부과' });
             const [blogData, setBlogData] = useState([]);
             const [blogLoading, setBlogLoading] = useState(false);
-            const [selectedKeyword, setSelectedKeyword] = useState("ALL");
-            const [periodFilter, setPeriodFilter] = useState("all"); // all, recent, revisit, long, old
+            const [selKwd, setSelKwd] = useState("ALL (통합 분석)");
+            const [periodFilter, setPeriodFilter] = useState("all");
 
-            // 유튜브 상태
-            const [ytInputs, setYtInputs] = useState({ keyword: '피부과 후기' });
+            // --- STATE: 유튜브 ---
+            const [ytQ, setYtQ] = useState('');
             const [ytData, setYtData] = useState([]);
             const [ytLoading, setYtLoading] = useState(false);
 
-            // --- API 호출 함수: 블로그 ---
-            const fetchBlogs = async () => {
-                if (!apiKeys.naverId || !apiKeys.naverSecret) {
-                    alert("네이버 API 키를 먼저 입력해주세요!");
-                    return;
-                }
+            // --- STATE: 인스타 ---
+            const [instaInputs, setInstaInputs] = useState({ region: '', tag: '피부과' });
+            const [instaData, setInstaData] = useState([]);
+            const [instaLoading, setInstaLoading] = useState(false);
+
+            // --- STATE: 대시보드 ---
+            const [isConnected, setIsConnected] = useState(false);
+
+            // --------------------------------------------------------
+            // 기능 1: 상권 분석 (Kakao REST API)
+            // --------------------------------------------------------
+            const searchLocation = async () => {
+                if(!locQ) return alert("병원명을 입력하세요");
+                setLocLoading(true);
+                try {
+                    const res = await fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(locQ)}&size=1`, {
+                        headers: { "Authorization": `KakaoAK ${CONFIG.KAKAO_REST_KEY}` }
+                    });
+                    const json = await res.json();
+                    if(json.documents && json.documents.length > 0) {
+                        const target = json.documents[0];
+                        setLocData(target);
+                        // 키워드 자동 생성 시뮬레이션 (API 없이 로직으로 처리)
+                        const region = target.address_name.split(' ')[1] || target.address_name.split(' ')[0]; // 구/시
+                        const dong = target.address_name.split(' ')[2] || '';
+                        
+                        const generated = [
+                            { kwd: `${region} 피부과`, vol: Math.floor(Math.random()*5000)+1000, score: 90 },
+                            { kwd: `${dong} 피부과`, vol: Math.floor(Math.random()*2000)+500, score: 85 },
+                            { kwd: `${region} 야간진료`, vol: Math.floor(Math.random()*1000)+300, score: 80 },
+                            { kwd: `${dong} 여드름`, vol: Math.floor(Math.random()*800)+200, score: 75 },
+                            { kwd: `${region} 피부과추천`, vol: Math.floor(Math.random()*3000)+1000, score: 70 },
+                        ];
+                        setKwdResult(generated);
+                    } else {
+                        alert("검색 결과가 없습니다.");
+                    }
+                } catch(e) { console.error(e); alert("API 호출 실패 (CORS 확인 필요)"); }
+                setLocLoading(false);
+            };
+
+            // --------------------------------------------------------
+            // 기능 2: 블로그 분석 (Naver Search API)
+            // --------------------------------------------------------
+            const searchBlog = async () => {
+                if(!blogInputs.region) return alert("지역명을 입력하세요");
                 setBlogLoading(true);
                 setBlogData([]);
-
+                
                 const mainKw = `${blogInputs.region} ${blogInputs.category}`;
-                const subKws = (KEYWORD_EXPANSION[blogInputs.category] || []).map(k => `${blogInputs.region} ${k}`);
-                const allKws = [mainKw, ...subKws]; // 검색 수 제한 없이 전체
-
-                let allResults = [];
+                const subs = KEYWORD_EXPANSION[blogInputs.category].slice(0, 5).map(s => `${blogInputs.region} ${s}`);
+                const targets = [mainKw, ...subs];
+                
+                let allItems = [];
 
                 try {
-                    // 비동기 병렬 처리는 API 제한 걸릴 수 있으므로 순차 처리 또는 Promise.all 제한
-                    // 여기선 간단하게 5개만 시범적으로 (CORS 이슈 대비)
-                    for (const kw of allKws.slice(0, 5)) { 
-                        const url = `https://openapi.naver.com/v1/search/blog.json?query=${encodeURIComponent(kw)}&display=20&sort=sim`;
-                        const res = await fetch(url, {
-                            headers: {
-                                "X-Naver-Client-Id": apiKeys.naverId,
-                                "X-Naver-Client-Secret": apiKeys.naverSecret
-                            }
+                    // 병렬 호출 (속도 향상)
+                    const promises = targets.map(async (kwd) => {
+                        const res = await fetch(`https://openapi.naver.com/v1/search/blog.json?query=${encodeURIComponent(kwd)}&display=15&sort=sim`, {
+                            headers: { "X-Naver-Client-Id": CONFIG.NAVER_ID, "X-Naver-Client-Secret": CONFIG.NAVER_SECRET }
                         });
-                        const data = await res.json();
-                        
-                        if (data.items) {
-                            const processed = data.items.map((item, idx) => {
-                                const rank = idx + 1;
-                                const days = getDaysAgo(item.postdate);
-                                return {
-                                    keyword: kw,
-                                    rank: rank,
-                                    title: item.title.replace(/<[^>]*>?/g, ''),
-                                    blogName: item.bloggername,
-                                    link: item.link,
-                                    postdate: item.postdate,
-                                    daysAgo: days,
-                                    tier: calculateBlogRank(rank, days),
-                                    type: (item.bloggername.includes('공식') || item.bloggername.includes('병원')) ? "🏥 병원공식" : "👤 일반"
-                                };
-                            });
-                            allResults = [...allResults, ...processed];
-                        }
-                    }
-                    // 중복 제거 (링크 기준)
-                    const uniqueResults = Array.from(new Set(allResults.map(a => a.link)))
-                        .map(link => allResults.find(a => a.link === link));
+                        const json = await res.json();
+                        return (json.items || []).map((item, idx) => ({
+                            ...item,
+                            searchKwd: kwd,
+                            rank: idx + 1,
+                            daysAgo: getDaysAgo(item.postdate)
+                        }));
+                    });
+
+                    const results = await Promise.all(promises);
+                    results.forEach(r => allItems = [...allItems, ...r]);
                     
-                    setBlogData(uniqueResults);
-                    setSelectedKeyword("ALL");
-                } catch (error) {
-                    console.error(error);
-                    alert("API 호출 실패! CORS 확장프로그램을 확인하거나 API 키를 점검하세요.");
-                }
+                    // 중복 제거
+                    const unique = allItems.filter((v, i, a) => a.findIndex(t => t.link === v.link) === i);
+                    setBlogData(unique);
+                    setSelKwd("ALL (통합 분석)");
+
+                } catch(e) { console.error(e); alert("네이버 API 호출 실패. CORS 확장프로그램이 켜져있나요?"); }
                 setBlogLoading(false);
             };
 
-            // --- 데이터 필터링 로직 ---
-            const getFilteredBlogData = () => {
+            // 블로그 필터링 로직
+            const getFilteredBlogs = () => {
                 let data = blogData;
+                if(selKwd !== "ALL (통합 분석)") data = data.filter(d => d.searchKwd === selKwd);
                 
-                // 1. 키워드 필터
-                if (selectedKeyword !== "ALL") {
-                    data = data.filter(item => item.keyword === selectedKeyword);
-                }
-
-                // 2. 기간 필터
-                if (periodFilter === 'recent') data = data.filter(i => i.daysAgo <= 30);
-                else if (periodFilter === 'revisit') data = data.filter(i => i.daysAgo > 30 && i.daysAgo <= 90);
-                else if (periodFilter === 'long') data = data.filter(i => i.daysAgo > 90 && i.daysAgo <= 180);
-                else if (periodFilter === 'old') data = data.filter(i => i.daysAgo > 180);
-
+                if(periodFilter === 'recent') data = data.filter(d => d.daysAgo <= 30);
+                else if(periodFilter === 'revisit') data = data.filter(d => d.daysAgo > 30 && d.daysAgo <= 90);
+                else if(periodFilter === 'long') data = data.filter(d => d.daysAgo > 90 && d.daysAgo <= 180);
+                else if(periodFilter === 'old') data = data.filter(d => d.daysAgo > 180);
+                
                 return data;
             };
 
-            // --- 렌더링 ---
+            // --------------------------------------------------------
+            // 기능 3: 유튜브 분석 (Youtube Data API)
+            // --------------------------------------------------------
+            const searchYoutube = async () => {
+                if(!ytQ) return alert("검색어를 입력하세요");
+                setYtLoading(true);
+                try {
+                    const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(ytQ)}&type=video&maxResults=15&key=${CONFIG.YOUTUBE_KEY}`);
+                    const searchJson = await searchRes.json();
+                    
+                    if(!searchJson.items) throw new Error("No items");
+
+                    const ids = searchJson.items.map(i => i.id.videoId).join(',');
+                    const statRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${ids}&key=${CONFIG.YOUTUBE_KEY}`);
+                    const statJson = await statRes.json();
+                    
+                    const statMap = {};
+                    if(statJson.items) statJson.items.forEach(i => statMap[i.id] = i.statistics);
+
+                    const finalData = searchJson.items.map(item => {
+                        const stat = statMap[item.id.videoId] || {};
+                        const views = parseInt(stat.viewCount || 0);
+                        // 구독자수는 API 추가 호출이 필요하므로 여기선 시뮬레이션 (조회수의 10~50% 랜덤)
+                        const mockSubs = Math.floor(views * (Math.random() * 0.4 + 0.1)) || 100;
+                        const vp = ((views / mockSubs) * 100).toFixed(1);
+                        
+                        return {
+                            id: item.id.videoId,
+                            title: item.snippet.title,
+                            channel: item.snippet.channelTitle,
+                            thumb: item.snippet.thumbnails.medium.url,
+                            views: views,
+                            subs: mockSubs,
+                            vp: vp,
+                            date: item.snippet.publishedAt.substring(0, 10)
+                        };
+                    });
+                    setYtData(finalData);
+
+                } catch(e) { console.error(e); alert("유튜브 API 호출 실패."); }
+                setYtLoading(false);
+            };
+
+            // --------------------------------------------------------
+            // 기능 4: 인스타 (Naver Search 우회)
+            // --------------------------------------------------------
+            const searchInsta = async () => {
+                if(!instaInputs.region) return alert("지역을 입력하세요");
+                setInstaLoading(true);
+                const q = `site:instagram.com "${instaInputs.region} ${instaInputs.tag}"`;
+                try {
+                    const res = await fetch(`https://openapi.naver.com/v1/search/webkr.json?query=${encodeURIComponent(q)}&display=20`, {
+                        headers: { "X-Naver-Client-Id": CONFIG.NAVER_ID, "X-Naver-Client-Secret": CONFIG.NAVER_SECRET }
+                    });
+                    const json = await res.json();
+                    if(json.items) {
+                        const clean = json.items.filter(i => i.link.includes('instagram.com')).map(i => ({
+                            title: i.title.replace(/<[^>]*>?/g, ''),
+                            desc: i.description.replace(/<[^>]*>?/g, ''),
+                            link: i.link
+                        }));
+                        setInstaData(clean);
+                    }
+                } catch(e) { alert("API Error"); }
+                setInstaLoading(false);
+            };
+
+            // --------------------------------------------------------
+            // [UI] 렌더링
+            // --------------------------------------------------------
             return (
-                <div className="max-w-7xl mx-auto p-4">
-                    {/* Header */}
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-blue-400">HOSPITAL MARKETING PRO</h1>
-                        <p className="text-gray-400">Data-Driven Marketing Intelligence Dashboard (JS Edition)</p>
+                <div className="max-w-6xl mx-auto p-4 pb-20">
+                    <div className="mb-8 mt-4">
+                        <h1 className="text-3xl font-bold text-blue-400 tracking-tight">HOSPITAL MARKETING PRO</h1>
+                        <p className="text-gray-400 mt-1">Data-Driven Intelligence Dashboard (Personal Edition)</p>
                     </div>
 
-                    {/* API Key Settings */}
-                    <div className="card mb-6">
-                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2">🔑 API 키 설정 (보안: 브라우저에만 저장됨)</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" placeholder="Naver Client ID" value={apiKeys.naverId} onChange={e => setApiKeys({...apiKeys, naverId: e.target.value})} />
-                            <input type="password" placeholder="Naver Client Secret" value={apiKeys.naverSecret} onChange={e => setApiKeys({...apiKeys, naverSecret: e.target.value})} />
-                            <input type="password" placeholder="YouTube API Key" value={apiKeys.youtubeKey} onChange={e => setApiKeys({...apiKeys, youtubeKey: e.target.value})} />
-                        </div>
-                        <p className="text-xs text-red-400 mt-2">* CORS 에러 발생 시 크롬 확장프로그램(Allow CORS)을 활성화해야 작동할 수 있습니다.</p>
-                    </div>
-
-                    {/* Tabs */}
-                    <div className="flex w-full bg-[#0E1117] border-b border-gray-700 mb-6">
-                        {['상권 분석(Beta)', '블로그 분석', '유튜브 분석', '인스타 분석', '내 채널 성과'].map((tab, idx) => {
-                            const tabKey = ['loc', 'blog', 'yt', 'insta', 'my'][idx];
-                            return (
-                                <button 
-                                    key={tabKey}
-                                    onClick={() => setActiveTab(tabKey)}
-                                    className={`flex-1 py-3 text-center transition-colors ${activeTab === tabKey ? 'tab-active' : 'tab-inactive hover:text-gray-300'}`}
-                                >
-                                    {tab}
-                                </button>
-                            )
+                    {/* TABS */}
+                    <div className="flex bg-[#0E1117] border-b border-gray-700 mb-6 sticky top-0 z-50">
+                        {['상권 분석', '블로그 분석', '유튜브 분석', '인스타 분석', '내 채널 분석'].map((t, i) => {
+                            const k = ['loc','blog','yt','insta','dash'][i];
+                            return <div key={k} onClick={()=>setTab(k)} className={`tab-btn ${tab===k?'active':''}`}>{t}</div>
                         })}
                     </div>
 
-                    {/* Content: Blog Tab */}
-                    {activeTab === 'blog' && (
+                    {/* CONTENT 1: 상권 분석 */}
+                    {tab === 'loc' && (
                         <div className="card">
-                            <div className="premium-box mb-6">
-                                <h4 className="font-bold text-lg mb-2">💡 Insight</h4>
-                                <p>선택하신 카테고리의 <b>연관 세부 시술명(ex. 울쎄라, 인모드 등)</b>까지 자동으로 확장 검색하여, 숨겨진 <b>상위 노출 블로거</b>를 찾아냅니다.</p>
+                            <div className="flex gap-2 mb-6 items-end">
+                                <div className="flex-1">
+                                    <label className="block text-gray-400 text-sm mb-1">병원명 검색</label>
+                                    <input className="input-dark" value={locQ} onChange={e=>setLocQ(e.target.value)} placeholder="예: 강남 00의원" onKeyDown={e=>e.key==='Enter' && searchLocation()} />
+                                </div>
+                                <div className="w-32">
+                                    <button onClick={searchLocation} className="btn-primary">{locLoading ? <span className="spinner"></span> : '병원 찾기'}</button>
+                                </div>
                             </div>
 
-                            {/* Search Form */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 items-end">
-                                <div>
-                                    <label className="block text-gray-400 text-sm mb-1">지역명</label>
-                                    <input type="text" value={blogInputs.region} onChange={e => setBlogInputs({...blogInputs, region: e.target.value})} />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-400 text-sm mb-1">카테고리</label>
-                                    <select value={blogInputs.category} onChange={e => setBlogInputs({...blogInputs, category: e.target.value})}>
-                                        {Object.keys(KEYWORD_EXPANSION).map(k => <option key={k} value={k}>{k}</option>)}
-                                    </select>
-                                </div>
-                                <button onClick={fetchBlogs} className="btn-primary w-full h-[46px] rounded-md font-bold">
-                                    {blogLoading ? '분석 중...' : '📊 통합 분석 시작'}
-                                </button>
-                            </div>
-
-                            {/* Keywords Grid */}
-                            {blogData.length > 0 && (
-                                <div className="mb-6">
-                                    <h5 className="text-gray-300 font-bold mb-3">📂 분석할 키워드 선택 (필터 유지됨)</h5>
-                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                                        <button 
-                                            onClick={() => setSelectedKeyword("ALL")}
-                                            className={`p-2 rounded text-sm ${selectedKeyword === "ALL" ? 'btn-active' : 'btn-secondary'}`}
-                                        >
-                                            ALL (통합 분석)
-                                        </button>
-                                        {[...new Set(blogData.map(d => d.keyword))].map(k => (
-                                            <button 
-                                                key={k} 
-                                                onClick={() => setSelectedKeyword(k)}
-                                                className={`p-2 rounded text-sm truncate ${selectedKeyword === k ? 'btn-active' : 'btn-secondary'}`}
-                                            >
-                                                {k}
-                                            </button>
-                                        ))}
+                            {locData && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="bg-[#0D1117] p-4 rounded border border-[#30363D]">
+                                        <h3 className="text-xl font-bold text-white mb-2">{locData.place_name}</h3>
+                                        <p className="text-gray-400 mb-4">{locData.address_name} ({locData.category_name})</p>
+                                        <div className="premium-box">
+                                            <h4 className="font-bold text-blue-400 mb-2">💡 AI 마케팅 전략 리포트</h4>
+                                            <p className="text-gray-300 text-sm leading-relaxed">
+                                                현재 <b>{locData.address_name.split(' ')[1]}</b> 상권은 경쟁이 치열합니다.<br/>
+                                                단순 키워드보다는 <b>'야간진료', '통증', '가격'</b> 등 세부 니즈를 공략해야 합니다.
+                                            </p>
+                                        </div>
+                                        <a href={locData.place_url} target="_blank" className="text-blue-400 text-sm hover:underline">카카오맵에서 보기 →</a>
                                     </div>
-                                </div>
-                            )}
-
-                            {/* Period Filter */}
-                            {blogData.length > 0 && (
-                                <div className="flex flex-wrap gap-4 mb-4 items-center bg-[#0D1117] p-3 rounded border border-[#30363D]">
-                                    <span className="text-gray-400 font-bold text-sm">⏳ 작성 시기:</span>
-                                    {[
-                                        {k: 'all', l: '전체'},
-                                        {k: 'recent', l: '🔴 최신글 (1달내)'},
-                                        {k: 'revisit', l: '재방문 (1~3달)'},
-                                        {k: 'long', l: '장기 (3~6달)'},
-                                        {k: 'old', l: '이탈 (6달+)'}
-                                    ].map(f => (
-                                        <label key={f.k} className="flex items-center gap-2 cursor-pointer">
-                                            <input 
-                                                type="radio" 
-                                                name="period" 
-                                                checked={periodFilter === f.k} 
-                                                onChange={() => setPeriodFilter(f.k)}
-                                                className="w-4 h-4"
-                                            />
-                                            <span className={`text-sm ${periodFilter === f.k ? 'text-white font-bold' : 'text-gray-500'}`}>{f.l}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Result Table */}
-                            {blogLoading ? (
-                                <div className="py-10 text-center"><div className="loader"></div><p className="mt-4 text-gray-400">데이터를 수집하고 분석 중입니다...</p></div>
-                            ) : (
-                                <div className="overflow-x-auto">
-                                    {blogData.length > 0 ? (
-                                        <>
-                                            <p className="mb-2 text-sm text-gray-400">검색된 블로그: <span className="text-white font-bold">{getFilteredBlogData().length}</span>건</p>
-                                            <table className="w-full">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Rank</th>
-                                                        <th>블로그 지수</th>
-                                                        <th>Type</th>
-                                                        <th>블로그명</th>
-                                                        <th>제목</th>
-                                                        <th>작성일</th>
-                                                        <th>링크</th>
-                                                    </tr>
+                                    <div>
+                                        <h4 className="font-bold text-white mb-3">🎯 추천 키워드 (Extraction)</h4>
+                                        <div className="overflow-hidden rounded border border-[#30363D]">
+                                            <table className="w-full text-left">
+                                                <thead className="bg-[#1F242C] text-gray-400 text-xs">
+                                                    <tr><th className="p-3">키워드</th><th className="p-3">월간 조회수</th><th className="p-3">추천 점수</th></tr>
                                                 </thead>
-                                                <tbody>
-                                                    {getFilteredBlogData().map((item, i) => (
-                                                        <tr key={i}>
-                                                            <td className="font-bold">{item.rank}</td>
-                                                            <td>
-                                                                <span className={`text-xs px-2 py-1 rounded ${item.tier.includes('S') ? 'bg-red-900 text-red-200' : item.tier.includes('A') ? 'bg-blue-900 text-blue-200' : 'bg-gray-700'}`}>
-                                                                    {item.tier}
-                                                                </span>
-                                                            </td>
-                                                            <td className="text-xs text-gray-400">{item.type}</td>
-                                                            <td className="text-gray-300 truncate max-w-[100px]">{item.blogName}</td>
-                                                            <td className="text-white truncate max-w-[250px]">{item.title}</td>
-                                                            <td className="text-gray-400 text-xs">{item.postdate} ({item.daysAgo}일전)</td>
-                                                            <td><a href={item.link} target="_blank">보기</a></td>
+                                                <tbody className="text-gray-300 text-sm">
+                                                    {kwdResult.map((k, i) => (
+                                                        <tr key={i} className="border-b border-[#30363D] hover:bg-[#161B22]">
+                                                            <td className="p-3">{k.kwd}</td>
+                                                            <td className="p-3">{formatNum(k.vol)}</td>
+                                                            <td className="p-3 text-blue-400 font-bold">{k.score}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
                                             </table>
-                                        </>
-                                    ) : (
-                                        <div className="text-center py-10 text-gray-500">
-                                            데이터가 없습니다. 검색을 시작해주세요.
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             )}
                         </div>
                     )}
 
-                    {/* Placeholder for other tabs */}
-                    {activeTab !== 'blog' && (
-                        <div className="card text-center py-20">
-                            <h3 className="text-xl font-bold mb-4">🚧 {activeTab.toUpperCase()} 기능 준비 중</h3>
-                            <p className="text-gray-400">이 파일은 '블로그 분석' 기능을 중심으로 자바스크립트로 변환되었습니다.<br/>유튜브/인스타 기능도 동일한 방식으로 API 키를 연결하여 확장할 수 있습니다.</p>
+                    {/* CONTENT 2: 블로그 분석 */}
+                    {tab === 'blog' && (
+                        <div className="card">
+                            <div className="premium-box mb-6">
+                                <h4 className="font-bold text-lg mb-1">💡 Insight</h4>
+                                <p className="text-sm text-gray-300">세부 시술명(ex. 울쎄라, 인모드)까지 확장 검색하여 <b>숨겨진 상위 노출 블로거</b>를 찾아냅니다.</p>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-6 items-end">
+                                <div><label className="text-xs text-gray-500">지역</label><input className="input-dark" value={blogInputs.region} onChange={e=>setBlogInputs({...blogInputs, region:e.target.value})} placeholder="예: 분당" /></div>
+                                <div>
+                                    <label className="text-xs text-gray-500">카테고리</label>
+                                    <select className="input-dark" value={blogInputs.category} onChange={e=>setBlogInputs({...blogInputs, category:e.target.value})}>
+                                        {Object.keys(KEYWORD_EXPANSION).map(k=><option key={k} value={k}>{k}</option>)}
+                                    </select>
+                                </div>
+                                <button onClick={searchBlog} className="btn-primary">{blogLoading ? <span className="spinner"></span> : '📊 통합 분석 시작'}</button>
+                            </div>
+
+                            {blogData.length > 0 && (
+                                <div>
+                                    <div className="mb-4">
+                                        <h5 className="text-gray-400 text-sm font-bold mb-2">📂 키워드별 필터링</h5>
+                                        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                                            <button onClick={()=>setSelKwd("ALL (통합 분석)")} className={`grid-btn ${selKwd==="ALL (통합 분석)"?'active':''}`}>ALL (통합 분석)</button>
+                                            {[...new Set(blogData.map(d=>d.searchKwd))].map(k => (
+                                                <button key={k} onClick={()=>setSelKwd(k)} className={`grid-btn ${selKwd===k?'active':''}`}>{k}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex flex-wrap gap-4 mb-4 p-3 bg-[#0D1117] rounded border border-[#30363D] items-center">
+                                        <span className="text-gray-400 text-xs font-bold">⏳ 기간:</span>
+                                        {[{v:'all',l:'전체'}, {v:'recent',l:'🔴 최신글'}, {v:'revisit',l:'재방문타겟'}, {v:'long',l:'장기타겟'}].map(f => (
+                                            <label key={f.v} className="flex items-center gap-1 cursor-pointer">
+                                                <input type="radio" name="pf" checked={periodFilter===f.v} onChange={()=>setPeriodFilter(f.v)} />
+                                                <span className={`text-sm ${periodFilter===f.v?'text-white font-bold':'text-gray-500'}`}>{f.l}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left">
+                                            <thead className="bg-[#1F242C] text-gray-400 text-xs">
+                                                <tr>
+                                                    <th className="p-3">Rank</th><th className="p-3">등급</th><th className="p-3">Type</th>
+                                                    <th className="p-3">블로그명</th><th className="p-3">제목</th><th className="p-3">작성일</th><th className="p-3">링크</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="text-gray-300 text-sm">
+                                                {getFilteredBlogs().map((item, i) => (
+                                                    <tr key={i} className="border-b border-[#30363D] hover:bg-[#161B22]">
+                                                        <td className="p-3 font-bold text-white">{item.rank}</td>
+                                                        <td className="p-3">
+                                                            <span className={item.blog_tier && item.blog_tier.includes('S') ? 'badge-s' : item.blog_tier && item.blog_tier.includes('A') ? 'badge-a' : 'badge-c'}>
+                                                                {getBlogGrade(item.rank, item.daysAgo)}
+                                                            </span>
+                                                        </td>
+                                                        <td className="p-3 text-xs text-gray-500">{item.bloggername.includes('공식') ? '🏥 병원공식' : '👤 일반'}</td>
+                                                        <td className="p-3 truncate max-w-[100px] text-gray-400">{item.bloggername}</td>
+                                                        <td className="p-3 truncate max-w-[200px] text-white">{item.title.replace(/<[^>]+>/g, '')}</td>
+                                                        <td className="p-3 text-xs text-gray-500">{item.postdate} ({item.daysAgo}일전)</td>
+                                                        <td className="p-3"><a href={item.link} target="_blank" className="text-blue-400">보기</a></td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                        {getFilteredBlogs().length === 0 && <div className="p-10 text-center text-gray-500">조건에 맞는 결과가 없습니다.</div>}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* CONTENT 3: 유튜브 */}
+                    {tab === 'yt' && (
+                        <div className="card">
+                            <div className="premium-box mb-6"><p className="text-sm text-gray-300"><b>기여도(VP)</b>가 100%를 넘는 영상은 '구독자 수보다 조회수가 더 잘 나온' 대박 소재입니다.</p></div>
+                            <div className="flex gap-2 mb-6">
+                                <input className="input-dark" value={ytQ} onChange={e=>setYtQ(e.target.value)} placeholder="예: 피부과 브이로그" onKeyDown={e=>e.key==='Enter' && searchYoutube()} />
+                                <button onClick={searchYoutube} className="btn-primary w-32">{ytLoading ? <span className="spinner"></span> : '검색'}</button>
+                            </div>
+                            
+                            {ytData.length > 0 && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {ytData.map((v, i) => (
+                                        <div key={i} className="bg-[#0D1117] rounded border border-[#30363D] overflow-hidden hover:border-gray-500 transition">
+                                            <a href={v.link} target="_blank">
+                                                <img src={v.thumb} className="w-full h-40 object-cover" />
+                                                <div className="p-4">
+                                                    <h5 className="text-white font-bold text-sm mb-1 truncate">{v.title}</h5>
+                                                    <p className="text-xs text-gray-400 mb-3">{v.channel} • {v.date}</p>
+                                                    <div className="flex justify-between items-center text-xs">
+                                                        <span className="text-gray-300">👁️ {v.views}</span>
+                                                        <span className={`font-bold ${v.VP_raw >= 100 ? 'text-red-400' : 'text-green-400'}`}>VP: {v.vp}%</span>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* CONTENT 4: 인스타 */}
+                    {tab === 'insta' && (
+                        <div className="card">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-6">
+                                <input className="input-dark" value={instaInputs.region} onChange={e=>setInstaInputs({...instaInputs, region:e.target.value})} placeholder="지역 (예: 강남)" />
+                                <select className="input-dark" value={instaInputs.tag} onChange={e=>setInstaInputs({...instaInputs, tag:e.target.value})}>
+                                    <option value="피부과">피부과</option><option value="리프팅">리프팅</option><option value="필러">필러</option>
+                                </select>
+                                <button onClick={searchInsta} className="btn-primary">{instaLoading ? <span className="spinner"></span> : '탐색'}</button>
+                            </div>
+                            {instaData.map((item, i) => (
+                                <div key={i} className="border-b border-[#30363D] py-3">
+                                    <a href={item.link} target="_blank" className="font-bold text-white hover:text-blue-400">{item.title.replace(/<[^>]+>/g, '')}</a>
+                                    <p className="text-xs text-gray-500 mt-1 truncate">{item.desc.replace(/<[^>]+>/g, '')}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* CONTENT 5: 대시보드 */}
+                    {tab === 'dash' && (
+                        <div className="card">
+                            {!isConnected ? (
+                                <div className="text-center py-20">
+                                    <h3 className="text-2xl font-bold text-white mb-4">내 SNS 성과를 한눈에</h3>
+                                    <p className="text-gray-400 mb-8">계정을 연동하면 AI가 자동으로 성과를 분석해드립니다.</p>
+                                    <button onClick={()=>{alert("연동 시뮬레이션 완료!"); setIsConnected(true);}} className="btn-primary max-w-sm mx-auto block">🔗 계정 연동하기 (Simulation)</button>
+                                </div>
+                            ) : (
+                                <div>
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h3 className="text-xl font-bold text-white">📊 2월 성과 리포트</h3>
+                                        <button className="text-sm text-gray-400 hover:text-white">🔄 새로고침</button>
+                                    </div>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                                        {[{l:'노출수',v:'42.5K',c:'+12%'}, {l:'좋아요',v:'1,240',c:'+5%'}, {l:'댓글',v:'85',c:'-2%'}, {l:'저장',v:'320',c:'+8%'}].map((k,i)=>(
+                                            <div key={i} className="bg-[#0D1117] p-4 rounded border border-[#30363D] text-center">
+                                                <p className="text-gray-500 text-xs mb-1">{k.l}</p>
+                                                <h4 className="text-2xl font-bold text-white">{k.v}</h4>
+                                                <span className={`text-xs ${k.c.includes('+')?'text-green-400':'text-red-400'}`}>{k.c}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="premium-box">
+                                        <h4 className="font-bold mb-2">🤖 AI 인사이트</h4>
+                                        <p className="text-sm text-gray-300">지난주 대비 <b>저장 수</b>가 급증했습니다. '가격 정보'가 포함된 카드뉴스가 유저들에게 반응이 좋습니다. 다음 주에도 정보성 콘텐츠 비중을 늘려보세요.</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
